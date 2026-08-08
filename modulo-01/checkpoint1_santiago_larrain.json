@@ -1,1 +1,290 @@
-
+{
+  "name": "Vatia",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -416,
+        0
+      ],
+      "id": "f4417c61-fca1-4569-bf99-2b425fb7b2bf",
+      "name": "When chat message received",
+      "webhookId": "9f215757-207a-4078-bde2-2795f0764a52"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# ROL\nSos Vatia, asistente de un instalador de sistemas de energía solar. Manejás\nel vocabulario técnico del oficio: consumo en kWh, suministro monofásico y\ntrifásico, tanque atmosférico y presurizado.\n\n# ÁMBITO\nVatia trabaja con consultas que llegan a un instalador de energía solar. Su\ntarea es leer el mensaje, identificar qué producto se consulta —fotovoltaico,\ntermotanque solar o climatización de pileta—, extraer los datos disponibles y\ndetectar los que faltan. No dimensiona sistemas, no calcula precios ni asesora\ntécnicamente al cliente final. Ordena la consulta para que el instalador la\ntrabaje.\n\n# OBJETIVO\nConvertir un mensaje desordenado en una consulta lista para cotizar, o\nidentificar con precisión qué dato falta y pedirlo.\n\n# REGLAS\n1. Nunca inventes ni supongas datos. Si un dato no está en el mensaje, se pide.\n2. Para fotovoltaico se necesitan: localidad, consumo en kWh del período\n   facturado, tipo de suministro (monofásico o trifásico) y lugar de\n   instalación. El importe en pesos no reemplaza al consumo en kWh.\n3. Si tenés los cuatro datos, registrá la consulta con la herramienta\n   disponible. Si falta alguno, no registres nada y respondé indicando\n   exactamente qué falta.\n4. Respondé en español argentino, breve y sin adornos.\n5. Nunca estimes, calcules ni deduzcas un dato faltante, aunque el usuario te\n   lo pida. Si falta, se pide al cliente.",
+          "maxIterations": 8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "53bf7728-80d1-4f8f-abd0-eb830a059383",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        -288,
+        208
+      ],
+      "id": "1fbfea7b-c0c1-4ad6-939e-7b9fd182471e",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "LaBpxbeRJhJKxqOX",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Registra una consulta de un cliente en la base de datos de Vatia.\n\nUSAR esta herramienta únicamente cuando la consulta esté COMPLETA, es decir,\ncuando estén presentes todos los datos obligatorios del producto consultado.\nPara fotovoltaico: localidad, consumo en kWh, período facturado, tipo de\nsuministro y lugar de instalación.\n\nNO USAR si falta cualquiera de esos datos. En ese caso, no registres nada y\nrespondé al instalador indicando qué dato falta pedirle al cliente.\n\nNO USAR para consultas generales, dudas técnicas o mensajes que no sean una\nconsulta de un cliente concreto.\n\nEn el campo Estado, escribí \"completa\" cuando registres.",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appqGXJWgfB1a32b6",
+          "mode": "list",
+          "cachedResultName": "Vatia",
+          "cachedResultUrl": "https://airtable.com/appqGXJWgfB1a32b6"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl5uvjQzv7fLTzAj",
+          "mode": "list",
+          "cachedResultName": "Consultas",
+          "cachedResultUrl": "https://airtable.com/appqGXJWgfB1a32b6/tbl5uvjQzv7fLTzAj"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Producto": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Producto', ``, 'string') }}",
+            "Consumo_kwh": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Consumo_kwh', ``, 'string') }}",
+            "Fecha": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Fecha', ``, 'string') }}",
+            "Periodo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Periodo', ``, 'string') }}",
+            "Suministro": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Suministro', ``, 'string') }}",
+            "Lugar_instalacion": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Lugar_instalacion', ``, 'string') }}",
+            "Estado": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Estado', ``, 'string') }}",
+            "Localidad": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Localidad', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Consumo_kwh",
+              "displayName": "Consumo_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Periodo",
+              "displayName": "Periodo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Suministro",
+              "displayName": "Suministro",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lugar_instalacion",
+              "displayName": "Lugar_instalacion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Localidad",
+              "displayName": "Localidad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        208
+      ],
+      "id": "bdfaca4b-36c9-4a94-92fb-8efa1db00985",
+      "name": "registrar_consulta",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "153XO1vYxxUh4dr6",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/382ab0e5-a3f9-428d-a5ea-971ac6a6e2df",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "consulta",
+              "value": "={{ $('When chat message received').item.json.chatInput }}"
+            },
+            {
+              "name": "respuesta",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d2408b84-fbf7-4c35-a491-1d621220bda3",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "registrar_consulta": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9c6db76c-7284-4aac-8e2e-a8a81b9bc123",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e8d9d929bc2eb9a6013fd5ba6bd017d6acb725f768c46ed4e11e5c63246b067"
+  },
+  "nodeGroups": [],
+  "id": "3n40Gv9AqpsmeXSU",
+  "tags": []
+}
