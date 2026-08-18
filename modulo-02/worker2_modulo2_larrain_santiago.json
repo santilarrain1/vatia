@@ -1,0 +1,385 @@
+{
+  "name": "worker_registro",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "producto"
+            },
+            {
+              "name": "estado"
+            },
+            {
+              "name": "localidad"
+            },
+            {
+              "name": "consumo_kwh"
+            },
+            {
+              "name": "periodo"
+            },
+            {
+              "name": "suministro"
+            },
+            {
+              "name": "lugar_instalacion"
+            },
+            {
+              "name": "trace_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        -128
+      ],
+      "id": "494e331e-3d46-409c-8c67-b9149a742fb9",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "43262d89-14aa-426c-b90b-49b220bfa94f",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "b2c7c74c-ef44-4bfa-abce-320eec8a2526",
+              "name": "data",
+              "value": "={{ { \"record_id\": $json.id, \"producto\": $('normalizar').item.json.producto, \"estado\": $('normalizar').item.json.estado, \"trace_id\": $('normalizar').item.json.trace_id } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -256
+      ],
+      "id": "7891ddca-7c28-4532-a066-fd9fdf6290cf",
+      "name": "contrato_salida"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7995a5f4-0b33-4e14-9fb9-9037fad13526",
+              "name": "consumo_kwh",
+              "value": "={{ $json.consumo_kwh }}",
+              "type": "string"
+            },
+            {
+              "id": "a0526b38-c36f-491f-aca4-ba7d30624e17",
+              "name": "periodo",
+              "value": "={{ $json.periodo }}",
+              "type": "string"
+            },
+            {
+              "id": "79bc5781-9567-4fab-8cd3-1f30d1259506",
+              "name": "suministro",
+              "value": "={{ $json.suministro.toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "5b98055a-2b25-4615-9f99-d0c2e6b5f380",
+              "name": "lugar_instalacion",
+              "value": "={{ $json.lugar_instalacion }}",
+              "type": "string"
+            },
+            {
+              "id": "4edef474-060d-493f-a7cc-4a6e2ce832ba",
+              "name": "trace_id",
+              "value": "={{ $json.trace_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b92fbcf4-d5c8-41bf-bb8f-688ffdea954d",
+              "name": "producto",
+              "value": "={{ $json.producto.toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "72a4d744-4075-4345-8ce4-e70b9c086925",
+              "name": "estado",
+              "value": "={{ $json.estado || \"completa\" }}",
+              "type": "string"
+            },
+            {
+              "id": "2c3d9dbf-2804-4bb1-858c-72cc9f6de2a2",
+              "name": "localidad",
+              "value": "={{ $json.localidad }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        -128
+      ],
+      "id": "ededb0a4-3076-48ad-81c1-89c0adaaa26c",
+      "name": "normalizar"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appqGXJWgfB1a32b6",
+          "mode": "list",
+          "cachedResultName": "Vatia",
+          "cachedResultUrl": "https://airtable.com/appqGXJWgfB1a32b6"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl5uvjQzv7fLTzAj",
+          "mode": "list",
+          "cachedResultName": "Consultas",
+          "cachedResultUrl": "https://airtable.com/appqGXJWgfB1a32b6/tbl5uvjQzv7fLTzAj"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Producto": "={{ $json.producto }}",
+            "Consumo_kwh": "={{ $json.consumo_kwh }}",
+            "Periodo": "={{ $json.periodo }}",
+            "Suministro": "={{ $json.suministro }}",
+            "Lugar_instalacion": "={{ $json.lugar_instalacion }}",
+            "Estado": "={{ $json.estado }}",
+            "Localidad": "={{ $json.localidad }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Consumo_kwh",
+              "displayName": "Consumo_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Periodo",
+              "displayName": "Periodo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Suministro",
+              "displayName": "Suministro",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lugar_instalacion",
+              "displayName": "Lugar_instalacion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Localidad",
+              "displayName": "Localidad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha_registro",
+              "displayName": "Fecha_registro",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -128
+      ],
+      "id": "020b9529-4a27-4623-b186-8437a03c1cdc",
+      "name": "registrar_airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "153XO1vYxxUh4dr6",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "239e35d0-6cad-4788-997a-cee0062f52ba",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "3a7908a4-db55-47d2-a36a-ffe6c9dba8c4",
+              "name": "data",
+              "value": "={{ null }}",
+              "type": "object"
+            },
+            {
+              "id": "991cefb7-631f-4eec-9cd6-7adf2c05661f",
+              "name": "motivo",
+              "value": "={{ $json.error.message || \"fallo al registrar en Airtable\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        0
+      ],
+      "id": "25fdeb54-5a1f-4f7d-a62b-55c977527d86",
+      "name": "contrato_error"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "producto": "Fotovoltaico",
+          "estado": "completa",
+          "localidad": "Mar del Plata",
+          "consumo_kwh": "900",
+          "periodo": "bimestre",
+          "suministro": "Trifásico",
+          "lugar_instalacion": "techo de chapa",
+          "trace_id": "test-001"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "normalizar": {
+      "main": [
+        [
+          {
+            "node": "registrar_airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "registrar_airtable": {
+      "main": [
+        [
+          {
+            "node": "contrato_salida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "contrato_error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a627b136-3723-4189-85d5-130816e5a378",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e8d9d929bc2eb9a6013fd5ba6bd017d6acb725f768c46ed4e11e5c63246b067"
+  },
+  "nodeGroups": [],
+  "id": "cqua8piE7aykZwoo",
+  "tags": []
+}

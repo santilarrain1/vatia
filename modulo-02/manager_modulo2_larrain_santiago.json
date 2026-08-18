@@ -1,0 +1,487 @@
+{
+  "name": "manager_vatia",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        112
+      ],
+      "id": "acda5add-c1cb-47c5-8c41-cc4609bf83c6",
+      "name": "When chat message received",
+      "webhookId": "59b5567a-d13b-4d87-86d5-04831a33b7f9"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "# ROL\nSos el router de triaje de Vatia. NO resolvés consultas, NO extraés datos,\nNO respondés al cliente, NO pedís información faltante. Tu única función\nes clasificar el mensaje y devolver JSON.\n\n# TAXONOMÍA CERRADA\nFOTOVOLTAICO | TERMOTANQUE | PILETA | FUERA_DE_ALCANCE\n\n# REGLAS\n1. Elegí exactamente una categoría de la lista. Nunca inventes categorías.\n2. Si el mensaje menciona más de un producto, elegí el que domina el pedido.\n3. Si no podés determinar el producto, devolvé FUERA_DE_ALCANCE.\n4. confidence es tu certeza real de 0.0 a 1.0. No infles el número.\n   Un mensaje ambiguo debe dar confidence baja, no una categoría inventada.\n5. Devolvé SOLO el objeto JSON, sin markdown ni explicaciones.\n\n# SALIDA\n{\"intent\":\"FOTOVOLTAICO\",\"confidence\":0.92,\"motivo\":\"menciona paneles y consumo en kWh\"}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        112
+      ],
+      "id": "9f2b6b34-42e6-4729-972e-d4d50da45aac",
+      "name": "router_triaje"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        144,
+        336
+      ],
+      "id": "5f009ca6-e248-4602-9d20-79d2a8669de0",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "LaBpxbeRJhJKxqOX",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"intent\": \"FOTOVOLTAICO\", \"confidence\": 0.92, \"motivo\": \"\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        336
+      ],
+      "id": "ee6fe5bb-3e9a-4215-82ef-6fa00c463abd",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.intent }}",
+                    "rightValue": "=FUERA_DE_ALCANCE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "473a7cde-0c1e-4152-9183-f57e2d24ab21"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "fuera_de_alcance"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d03359e9-edeb-43e3-bfb7-89a57c587f98",
+                    "leftValue": "={{ $json.output.confidence }}",
+                    "rightValue": "={{ 0.5 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "baja_confianza"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2f588408-ddfd-4fe7-acea-faacff13bda7",
+                    "leftValue": "={{ $json.output.intent }}",
+                    "rightValue": "=FOTOVOLTAICO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "fotovoltaico"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6e2ff36e-66b5-41a7-98c7-6e3b95951f88",
+                    "leftValue": "={{ $json.output.intent }}",
+                    "rightValue": "=TERMOTANQUE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sin_worker"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        64
+      ],
+      "id": "a1d6d898-d3b1-4715-923d-a6a91a0db475",
+      "name": "enrutador"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4c82d0e9-aa66-4b58-9b47-8d4756b6bcd1",
+              "name": "intent",
+              "value": "={{ $json.output.intent }}",
+              "type": "string"
+            },
+            {
+              "id": "5f12aefd-a3be-492e-8a47-3f85414c7322",
+              "name": "confidence",
+              "value": "={{ $json.output.confidence }}",
+              "type": "string"
+            },
+            {
+              "id": "265d4e2c-7fd1-466c-ab8e-4c91d9f59188",
+              "name": "original_input",
+              "value": "={{ $('When chat message received').item.json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "76b59645-fd2e-4e95-89d1-a2be7ef578da",
+              "name": "trace_id",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        272
+      ],
+      "id": "3e0ff3bb-8eb0-4d0c-b7af-3d5fa3c088c0",
+      "name": "payload_worker"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "pewKAVP8BPrm3Srg",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/pewKAVP8BPrm3Srg",
+          "cachedResultName": "worker_fotovoltaico"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "intent": "={{ $json.intent }}",
+            "confidence": "={{ $json.confidence }}",
+            "original_input": "={{ $json.original_input }}",
+            "trace_id": "={{ $json.trace_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "intent",
+              "displayName": "intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "original_input",
+              "displayName": "original_input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "trace_id",
+              "displayName": "trace_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        112
+      ],
+      "id": "715f4121-69a9-4dd8-9555-93f76430e8dc",
+      "name": "Call 'worker_fotovoltaico'"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "vatia-logs",
+          "mode": "name"
+        },
+        "text": "=🔔 Requiere revisión humana\nIntent detectado: {{ $json.output.intent }}\nConfidence: {{ $json.output.confidence }}\nMotivo del router: {{ $json.output.motivo }}\nConsulta: {{ $('When chat message received').item.json.chatInput }}\nTrace ID: {{ $execution.id }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        816,
+        -16
+      ],
+      "id": "32a206c3-0e29-4e45-9b7e-626737c0daec",
+      "name": "alerta_humano",
+      "webhookId": "6c114ce1-d493-439d-a551-e98a51ce4995",
+      "credentials": {
+        "slackApi": {
+          "id": "swESLFSiddAnvNLl",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "vatia-logs",
+          "mode": "name"
+        },
+        "text": "={{ $json.data.estado === \"completa\" ? \"✅ Consulta registrada\" : \"⚠️ Consulta incompleta\" }}\nWorker: worker_fotovoltaico\nIntent: {{ $('payload_worker').item.json.intent }} (confidence: {{ $('payload_worker').item.json.confidence }})\nTrace ID: {{ $('payload_worker').item.json.trace_id }}\nConsulta: {{ $('payload_worker').item.json.original_input }}\nEstado: {{ $json.data.estado }}\nFaltan: {{ $json.data.faltantes.join(\", \") || \"-\" }}\nRecord ID: {{ $json.data.record_id || \"no registrado\" }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1248,
+        112
+      ],
+      "id": "1880de3d-a694-4274-a629-697337bbbbd3",
+      "name": "log_auditoria",
+      "webhookId": "5149a448-9dec-4551-b83c-f03f95366e60",
+      "credentials": {
+        "slackApi": {
+          "id": "swESLFSiddAnvNLl",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "router_triaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "router_triaje",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "router_triaje",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "router_triaje": {
+      "main": [
+        [
+          {
+            "node": "enrutador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "enrutador": {
+      "main": [
+        [
+          {
+            "node": "alerta_humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "alerta_humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "payload_worker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "alerta_humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "alerta_humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "payload_worker": {
+      "main": [
+        [
+          {
+            "node": "Call 'worker_fotovoltaico'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'worker_fotovoltaico'": {
+      "main": [
+        [
+          {
+            "node": "log_auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "97b20950-dee2-4483-8f3e-78a95504dd14",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e8d9d929bc2eb9a6013fd5ba6bd017d6acb725f768c46ed4e11e5c63246b067"
+  },
+  "nodeGroups": [],
+  "id": "FihrPKHcngBTiLmP",
+  "tags": []
+}

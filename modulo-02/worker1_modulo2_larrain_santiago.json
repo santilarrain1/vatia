@@ -1,0 +1,477 @@
+{
+  "name": "worker_fotovoltaico",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "intent"
+            },
+            {
+              "name": "confidence"
+            },
+            {
+              "name": "original_input"
+            },
+            {
+              "name": "trace_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        -32
+      ],
+      "id": "a5a741d4-9285-4fe4-8027-8cd1b45b371f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.original_input }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "# ROL\nSos el especialista en sistemas fotovoltaicos de Vatia. Recibís la consulta\nde un cliente y extraés los datos técnicos necesarios para cotizar.\n\n# CAMPOS OBLIGATORIOS\nlocalidad, consumo_kwh, periodo, suministro, lugar_instalacion\n\n# REGLAS\n1. Nunca inventes ni estimes un dato. Si no está en el mensaje, va en faltantes.\n2. El importe en pesos NO reemplaza al consumo en kWh.\n3. suministro solo puede ser \"monofasico\" o \"trifasico\".\n4. No respondas al cliente. No pidas datos. Solo devolvés JSON.\n5. Devolvé SOLO el objeto JSON, sin markdown ni explicaciones.\n\n# SALIDA\n{\"estado\":\"completa\",\"campos\":{\"localidad\":\"\",\"consumo_kwh\":\"\",\"periodo\":\"\",\"suministro\":\"\",\"lugar_instalacion\":\"\"},\"faltantes\":[]}\n\nSi falta algún campo obligatorio, estado es \"incompleta\" y faltantes lista los nombres."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -176,
+        -32
+      ],
+      "id": "779f318d-2f61-4e13-afe6-6e218453b4ac",
+      "name": "extractor_fotovoltaico"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "39354863-cb91-4ec9-9254-5e635f476398",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "LaBpxbeRJhJKxqOX",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"estado\": \"completa\",\n  \"campos\": {\n    \"localidad\": \"\",\n    \"consumo_kwh\": \"\",\n    \"periodo\": \"\",\n    \"suministro\": \"\",\n    \"lugar_instalacion\": \"\"\n  },\n  \"faltantes\": []\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        176
+      ],
+      "id": "f293a80d-2760-4955-bf52-dbb269a8d0d7",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "15c7ac56-ca86-44aa-8ed7-e0dbd3b0105d",
+              "leftValue": "={{ $json.output.estado }}",
+              "rightValue": "completa",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        176,
+        -32
+      ],
+      "id": "8e59b04b-5100-42b7-8879-258c8b47ddd6",
+      "name": "esta_completa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da3f2ef1-d757-46ee-845c-37b7c3a3f97a",
+              "name": "producto",
+              "value": "fotovoltaico",
+              "type": "string"
+            },
+            {
+              "id": "2ba5dd2f-1967-4244-b44d-0988d8dbb28f",
+              "name": "estado",
+              "value": "={{ $json.output.estado }}",
+              "type": "string"
+            },
+            {
+              "id": "8f33eed9-16f9-419c-966a-b74cca1c443a",
+              "name": "localidad",
+              "value": "={{ $json.output.campos.localidad }}",
+              "type": "string"
+            },
+            {
+              "id": "679b6fa5-d522-45f1-9dbb-38410a789431",
+              "name": "consumo_kwh",
+              "value": "={{ $json.output.campos.consumo_kwh }}",
+              "type": "string"
+            },
+            {
+              "id": "15c90a77-df35-4f8e-82c3-77b010ed5599",
+              "name": "periodo",
+              "value": "={{ $json.output.campos.periodo }}",
+              "type": "string"
+            },
+            {
+              "id": "83759bf8-2196-4425-893a-d660463bb593",
+              "name": "suministro",
+              "value": "={{ $json.output.campos.suministro }}",
+              "type": "string"
+            },
+            {
+              "id": "47a0e531-9543-43ae-865c-7231d2f3828f",
+              "name": "lugar_instalacion",
+              "value": "={{ $json.output.campos.lugar_instalacion }}",
+              "type": "string"
+            },
+            {
+              "id": "a6742e35-1532-49d2-afda-2cf44e19880f",
+              "name": "trace_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.trace_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -80
+      ],
+      "id": "c8798bd8-bb8f-4acd-9508-4c309a5db360",
+      "name": "preparar_registro"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "cqua8piE7aykZwoo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/cqua8piE7aykZwoo",
+          "cachedResultName": "worker_registro"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "producto": "={{ $json.producto }}",
+            "estado": "={{ $json.estado }}",
+            "localidad": "={{ $json.localidad }}",
+            "consumo_kwh": "={{ $json.consumo_kwh }}",
+            "periodo": "={{ $json.periodo }}",
+            "suministro": "={{ $json.suministro }}",
+            "lugar_instalacion": "={{ $json.lugar_instalacion }}",
+            "trace_id": "={{ $json.trace_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "producto",
+              "displayName": "producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "localidad",
+              "displayName": "localidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "consumo_kwh",
+              "displayName": "consumo_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "periodo",
+              "displayName": "periodo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "suministro",
+              "displayName": "suministro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "lugar_instalacion",
+              "displayName": "lugar_instalacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "trace_id",
+              "displayName": "trace_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        -80
+      ],
+      "id": "09b12850-51e1-464b-a772-6822c8a9b275",
+      "name": "Call 'worker_registro'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de68f14a-0d0e-45e4-b0b5-ad78013df3fd",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "215940b9-6c0c-4d63-9b07-6a69cf2bca92",
+              "name": "data",
+              "value": "={{ { \"intent\": \"FOTOVOLTAICO\", \"estado\": \"completa\", \"record_id\": $json.data.record_id, \"faltantes\": [], \"trace_id\": $('When Executed by Another Workflow').item.json.trace_id } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        32
+      ],
+      "id": "0e139158-fa06-42b5-81b2-22ae26b323ee",
+      "name": "contrato_completa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "182d06ea-2704-4a85-bcd1-343221af9d0a",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "01f7b46c-9e95-431c-92f0-8fe9a3f07331",
+              "name": "data",
+              "value": "={{ { \"intent\": \"FOTOVOLTAICO\", \"estado\": \"incompleta\", \"record_id\": null, \"faltantes\": $json.output.faltantes, \"trace_id\": $('When Executed by Another Workflow').item.json.trace_id } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        192
+      ],
+      "id": "49342557-5e7d-48eb-8dd8-864aa1f69c53",
+      "name": "contrato_incompleta"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "intent": "FOTOVOLTAICO",
+          "confidence": "0.92",
+          "original_input": "hola, quiero poner paneles en mi casa de mar del plata, gasto 900 kwh por bimestre, es trifasico y el techo es de chapa",
+          "trace_id": "test-004"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "extractor_fotovoltaico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "extractor_fotovoltaico",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "extractor_fotovoltaico",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extractor_fotovoltaico": {
+      "main": [
+        [
+          {
+            "node": "esta_completa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "esta_completa": {
+      "main": [
+        [
+          {
+            "node": "preparar_registro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "contrato_incompleta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "preparar_registro": {
+      "main": [
+        [
+          {
+            "node": "Call 'worker_registro'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'worker_registro'": {
+      "main": [
+        [
+          {
+            "node": "contrato_completa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ab931d53-3208-405b-8810-2fb0fd64426e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e8d9d929bc2eb9a6013fd5ba6bd017d6acb725f768c46ed4e11e5c63246b067"
+  },
+  "nodeGroups": [],
+  "id": "pewKAVP8BPrm3Srg",
+  "tags": []
+}
